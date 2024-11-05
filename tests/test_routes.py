@@ -181,12 +181,14 @@ class TestProductRoutes(TestCase):
         return len(data)
 
     def test_get_product(self):
+        """It should Get a single Product"""
         test_product = self._create_products(1)[0]
         response = self.client.get(f"{BASE_URL}/{test_product.id}")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(test_product.name, response.get_json()["name"])
 
     def test_get_product_not_found(self):
+        """It should not Get a Product thats not found"""
         response = self.client.get(f"{BASE_URL}/{0}")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         data = response.get_json()
@@ -205,7 +207,7 @@ class TestProductRoutes(TestCase):
         self.assertEqual(updated_product["description"], "This is a test")
 
     def test_delete_product(self):
-        #Cannot use self.get_product_count() because it doesn't exist
+        """It should Delete a Product"""
         products = self._create_products(5)
         product_count = self.get_product_count()
         test_product = products[0]
@@ -218,7 +220,8 @@ class TestProductRoutes(TestCase):
         self.assertEqual(new_count, product_count - 1)
 
     def test_list_all_products(self):
-        all_products = self._create_products(5)
+        """It should list all products"""
+        self._create_products(5)
         product_count = self.get_product_count()
         response = self.client.get(BASE_URL)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -226,6 +229,7 @@ class TestProductRoutes(TestCase):
         self.assertEqual(len(data), product_count)
 
     def test_list_by_name(self):
+        """It should list all products by name"""
         all_products = self._create_products(5)
         first_product_name = all_products[0].name
         occurrences = len([product for product in all_products if product.name == first_product_name])
@@ -237,6 +241,7 @@ class TestProductRoutes(TestCase):
             self.assertEqual(product["name"], first_product_name)
 
     def test_list_by_category(self):
+        """It should list all products by category"""
         all_products = self._create_products(10)
         first_product_category = all_products[0].category
         occurrences = [product for product in all_products if product.category == first_product_category]
@@ -244,26 +249,30 @@ class TestProductRoutes(TestCase):
         response = self.client.get(BASE_URL, query_string=f"name={quote_plus(first_product_category.name)}")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.get_json()
-        
+
         for product in data:
             self.assertEqual(product["category"], first_product_category.name)
 
     def test_list_by_availability(self):
+        """It should list all products by availability by true"""
         all_products = self._create_products(10)
-        occurrences = [product for product in all_products if product.available == True]
-
+        occurrences = [product for product in all_products if product.available is True]
+        occurrences_count = len(occurrences)
         response = self.client.get(BASE_URL, query_string="available=true")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.get_json()
-        
+        self.assertEqual(occurrences_count, len(data))
         for product in data:
             self.assertEqual(product["available"], True)
 
     def test_list_by_no_availability(self):
+        """It should list all products by availability by false"""
         all_products = self._create_products(10)
-        occurrences = [product for product in all_products if product.available == False]
+        occurrences = [product for product in all_products if product.available is False]
+        occurrences_count = len(occurrences)
         response = self.client.get(BASE_URL, query_string="available=false")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.get_json()
+        self.assertEqual(occurrences_count, len(data))
         for product in data:
             self.assertEqual(product["available"], False)

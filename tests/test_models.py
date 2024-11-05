@@ -101,54 +101,63 @@ class TestProductModel(unittest.TestCase):
         self.assertEqual(new_product.available, product.available)
         self.assertEqual(new_product.category, product.category)
 
-    #
-    # ADD YOUR TEST CASES HERE
-    #
     def test_read_a_product(self):
+        """It should Read a Product"""
         product = ProductFactory()
         product.id = None
         product.create()
         self.assertIsNotNone(product.id)
-        product_found = Product.find(product.id)
-        self.assertEqual(product.id, product_found.id)
-        self.assertEqual(product.description, product_found.description)
-        self.assertEqual(product.name, product_found.name)
-        self.assertEqual(product.price, product_found.price)
+        # Fetch it back
+        found_product = Product.find(product.id)
+        self.assertEqual(found_product.id, product.id)
+        self.assertEqual(found_product.name, product.name)
+        self.assertEqual(found_product.description, product.description)
+        self.assertEqual(found_product.price, product.price)
 
     def test_update_a_product(self):
+        """It should Update a Product"""
         product = ProductFactory()
         product.id = None
         product.create()
         self.assertIsNotNone(product.id)
+        # Change it an save it
         product.description = "This is a test"
         id = product.id
         product.update()
         self.assertEqual(id, product.id)
         self.assertEqual(product.description, "This is a test")
+        # Fetch it back and make sure the id hasn't changed
+        # but the data did change
         all_products = Product.all()
         self.assertEqual(len(all_products), 1)
         self.assertEqual(all_products[0].id, id)
         self.assertEqual(all_products[0].description, "This is a test")
-    
+
     def test_delete_a_product(self):
+        """It should Delete a Product"""
         product = ProductFactory()
         product.create()
         all_products = Product.all()
         self.assertEqual(len(all_products), 1)
+        # delete the product and make sure it isn't in the database
         product.delete()
         all_products = Product.all()
         self.assertEqual(len(all_products), 0)
 
     def test_list_all_products(self):
+        """It should list all products in the database"""
         all_products = Product.all()
         self.assertEqual(len(all_products), 0)
-        for i in range(5):
+        # Create 5 Products
+        for _ in range(5):
             product = ProductFactory()
             product.create()
+        # See if we get back 5 products
         all_products = Product.all()
         self.assertEqual(len(all_products), 5)
-    
+
     def test_search_product_by_name(self):
+        """It should Find a Product by Name"""
         product_batch = ProductFactory.create_batch(5)
         for product in product_batch:
             product.create()
@@ -158,8 +167,9 @@ class TestProductModel(unittest.TestCase):
         self.assertEqual(occurrences, found.count())
         for product in found:
             self.assertEqual(product.name, first_product_name)
-        
+
     def test_search_product_by_category(self):
+        """It should Find Products by Availability"""
         product_batch = ProductFactory.create_batch(10)
         for product in product_batch:
             product.create()
@@ -170,8 +180,8 @@ class TestProductModel(unittest.TestCase):
         for product in found:
             self.assertEqual(product.category, category)
 
-
     def test_search_product_by_availability(self):
+        """It should Find Products by Category"""
         product_batch = ProductFactory.create_batch(10)
         for product in product_batch:
             product.create()
@@ -181,4 +191,3 @@ class TestProductModel(unittest.TestCase):
         self.assertEqual(found.count(), occurrences)
         for product in found:
             self.assertEqual(product.available, available)
-    
